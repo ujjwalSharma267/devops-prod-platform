@@ -1,0 +1,51 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKERHUB_USER = credentials('dockerhub-username')
+    DOCKERHUB_PASS = credentials('dockerhub-password')
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Frontend Image') {
+      steps {
+        sh 'docker build -f docker/frontend.Dockerfile -t $DOCKERHUB_USER/devops-frontend:latest .'
+      }
+    }
+
+    stage('Build Backend Image') {
+      steps {
+        sh 'docker build -f docker/backend.Dockerfile -t $DOCKERHUB_USER/devops-backend:latest .'
+      }
+    }
+
+    stage('Login to Docker Hub') {
+      steps {
+        sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
+      }
+    }
+
+    stage('Push Images') {
+      steps {
+        sh 'docker push $DOCKERHUB_USER/devops-frontend:latest'
+        sh 'docker push $DOCKERHUB_USER/devops-backend:latest'
+      }
+    }
+  }
+
+  post {
+    success {
+      echo 'CI pipeline completed successfully'
+    }
+    failure {
+      echo 'CI pipeline failed'
+    }
+  }
+}

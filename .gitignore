@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log
+
+# Build output
+build/
+dist/
+
+# Docker
+*.log
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jenkins
+jenkins_home/
