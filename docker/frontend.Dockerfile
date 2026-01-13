@@ -1,7 +1,7 @@
-# ---------- STAGE 1: BUILD ----------
+# -------- BUILD STAGE --------
 FROM node:18-alpine AS build
 
-WORKDIR /app/frontend
+WORKDIR /app
 
 COPY app/frontend/package*.json ./
 RUN npm install
@@ -9,10 +9,10 @@ RUN npm install
 COPY app/frontend/ .
 RUN npm run build
 
-# ---------- STAGE 2: RUNTIME ----------
+# -------- RUNTIME STAGE --------
 FROM nginx:alpine
 
-COPY --from=build /app/frontend/build /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
 
 EXPOSE 80
 
