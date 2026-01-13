@@ -1,0 +1,12 @@
+# ignore node modules
+node_modules
+
+# git
+.git
+.gitignore
+
+# build output
+build
+dist
+
+# DO NOT IGNORE package.json
