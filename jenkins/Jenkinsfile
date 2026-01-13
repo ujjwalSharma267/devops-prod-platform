@@ -14,11 +14,18 @@ pipeline {
       }
     }
 
-    stage('Build Frontend Image') {
-      steps {
-        sh 'docker build -f docker/frontend.Dockerfile -t $DOCKERHUB_USER/devops-frontend:latest .'
-      }
-    }
+  stage('Build Frontend Image') {
+  steps {
+    sh '''
+      cd app/frontend
+      docker build \
+        -f ../../docker/frontend.Dockerfile \
+        -t $DOCKERHUB_USER/devops-frontend:latest .
+    '''
+  }
+}
+
+
 
     stage('Build Backend Image') {
       steps {
