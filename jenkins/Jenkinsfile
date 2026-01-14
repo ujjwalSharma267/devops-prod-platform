@@ -2,9 +2,10 @@ pipeline {
   agent any
 
   environment {
+    // CHANGE THIS to match the exact ID in Jenkins → Credentials
     DOCKERHUB_CREDS = credentials('dockerhub-creds')
-    DOCKERHUB_USER = "${DOCKERHUB_CREDS_USR}"
-    DOCKERHUB_PASS = "${DOCKERHUB_CREDS_PSW}"
+    DOCKERHUB_USER  = "${DOCKERHUB_CREDS_USR}"
+    DOCKERHUB_PASS  = "${DOCKERHUB_CREDS_PSW}"
   }
 
   stages {
@@ -15,29 +16,42 @@ pipeline {
       }
     }
 
-   stage('Build Frontend Image') {
-  steps {
-    sh '''
-      docker build -f docker/frontend.Dockerfile \
-      -t $DOCKERHUB_USER/devops-frontend:latest $WORKSPACE
-    '''
-  }
-}
+    stage('Verify Workspace') {
+      steps {
+        sh '''
+          echo "Workspace is: $WORKSPACE"
+          ls -l $WORKSPACE
+          ls -l $WORKSPACE/app
+        '''
+      }
+    }
 
-stage('Build Backend Image') {
-  steps {
-    sh '''
-      docker build -f docker/backend.Dockerfile \
-      -t $DOCKERHUB_USER/devops-backend:latest $WORKSPACE
-    '''
-  }
-}
+    stage('Build Frontend Image') {
+      steps {
+        sh '''
+          docker build \
+          -f docker/frontend.Dockerfile \
+          -t $DOCKERHUB_USER/devops-frontend:latest \
+          $WORKSPACE
+        '''
+      }
+    }
 
+    stage('Build Backend Image') {
+      steps {
+        sh '''
+          docker build \
+          -f docker/backend.Dockerfile \
+          -t $DOCKERHUB_USER/devops-backend:latest \
+          $WORKSPACE
+        '''
+      }
+    }
 
     stage('Login to Docker Hub') {
       steps {
         sh '''
-          echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
         '''
       }
     }
@@ -54,10 +68,10 @@ stage('Build Backend Image') {
 
   post {
     success {
-      echo 'CI pipeline completed successfully'
+      echo "CI pipeline completed successfully"
     }
     failure {
-      echo 'CI pipeline failed'
+      echo "CI pipeline failed"
     }
   }
 }
