@@ -5,7 +5,7 @@ WORKDIR /app
 COPY app/frontend/package*.json ./
 RUN npm install
 
-COPY app/frontend/ .
+COPY app/frontend ./
 RUN npm run build
 
 FROM nginx:alpine

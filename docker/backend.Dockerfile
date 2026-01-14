@@ -5,7 +5,7 @@ WORKDIR /app
 COPY app/backend/package*.json ./
 RUN npm install --only=production
 
-COPY app/backend/ .
+COPY app/backend ./
 
 EXPOSE 5000
 CMD ["node", "src/server.js"]
