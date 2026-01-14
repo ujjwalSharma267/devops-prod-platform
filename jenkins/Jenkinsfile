@@ -2,8 +2,9 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_USER = credentials('dockerhub-username')
-    DOCKERHUB_PASS = credentials('dockerhub-password')
+    DOCKERHUB_CREDS = credentials('dockerhub-creds')
+    DOCKERHUB_USER = "${DOCKERHUB_CREDS_USR}"
+    DOCKERHUB_PASS = "${DOCKERHUB_CREDS_PSW}"
   }
 
   stages {
@@ -14,35 +15,39 @@ pipeline {
       }
     }
 
-  stage('Build Frontend Image') {
+   stage('Build Frontend Image') {
   steps {
     sh '''
-      cd app/frontend
-      docker build \
-        -f ../../docker/frontend.Dockerfile \
-        -t $DOCKERHUB_USER/devops-frontend:latest .
+      docker build -f docker/frontend.Dockerfile \
+      -t $DOCKERHUB_USER/devops-frontend:latest $WORKSPACE
+    '''
+  }
+}
+
+stage('Build Backend Image') {
+  steps {
+    sh '''
+      docker build -f docker/backend.Dockerfile \
+      -t $DOCKERHUB_USER/devops-backend:latest $WORKSPACE
     '''
   }
 }
 
 
-
-    stage('Build Backend Image') {
-      steps {
-        sh 'docker build -f docker/backend.Dockerfile -t $DOCKERHUB_USER/devops-backend:latest .'
-      }
-    }
-
     stage('Login to Docker Hub') {
       steps {
-        sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
+        sh '''
+          echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+        '''
       }
     }
 
     stage('Push Images') {
       steps {
-        sh 'docker push $DOCKERHUB_USER/devops-frontend:latest'
-        sh 'docker push $DOCKERHUB_USER/devops-backend:latest'
+        sh '''
+          docker push $DOCKERHUB_USER/devops-frontend:latest
+          docker push $DOCKERHUB_USER/devops-backend:latest
+        '''
       }
     }
   }
