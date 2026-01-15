@@ -2,7 +2,6 @@ pipeline {
   agent any
 
   environment {
-    // CHANGE THIS to match the exact ID in Jenkins → Credentials
     DOCKERHUB_CREDS = credentials('dockerhub-creds')
     DOCKERHUB_USER  = "${DOCKERHUB_CREDS_USR}"
     DOCKERHUB_PASS  = "${DOCKERHUB_CREDS_PSW}"
@@ -26,6 +25,15 @@ pipeline {
       }
     }
 
+    // 🔐 Docker login MUST happen before any build
+    stage('Docker Login') {
+      steps {
+        sh '''
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+        '''
+      }
+    }
+
     stage('Build Frontend Image') {
       steps {
         sh '''
@@ -44,14 +52,6 @@ pipeline {
           -f docker/backend.Dockerfile \
           -t $DOCKERHUB_USER/devops-backend:latest \
           $WORKSPACE
-        '''
-      }
-    }
-
-    stage('Login to Docker Hub') {
-      steps {
-        sh '''
-          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
         '''
       }
     }
